@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>バスケットボール・オフェンスフォーメーション究極図解</title>
+    
+    <!-- アイコン設定 -->
+    <link rel="icon" href="icon192.png" sizes="192x192" type="image/png">
+    <link rel="apple-touch-icon" href="icon192.png">
+    <link rel="icon" href="icon512.png" sizes="512x512" type="image/png">
+
+    <style>
+        :root {
+            --primary-color: #e67e22;
+            --secondary-color: #2c3e50;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --offense-color: #3498db;
+            --defense-color: #e74c3c;
+            --ball-color: #f39c12;
+            --info-color: #2980b9;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--secondary-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        header { text-align: center; margin-bottom: 20px; }
+        h1 { color: var(--primary-color); border-bottom: 3px solid var(--primary-color); padding-bottom: 5px; display: inline-block; margin: 0; font-size: 1.3rem; }
+        .subtitle { color: #7f8c8d; font-size: 0.85rem; margin-top: 5px; }
+        .container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 280px 1fr; gap: 20px; }
+        .sidebar { background: var(--card-bg); padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); height: fit-content; position: sticky; top: 20px; }
+        .sidebar h2 { font-size: 0.95rem; margin-top: 0; border-left: 5px solid var(--primary-color); padding-left: 10px; }
+        .formation-list { list-style: none; padding: 0; margin: 0; }
+        .formation-item { padding: 10px; margin-bottom: 6px; cursor: pointer; border-radius: 4px; transition: all 0.2s; font-weight: bold; font-size: 0.8rem; border: 1px solid #eee; background: #f9f9f9; }
+        .formation-item:hover { background: #f0f0f0; border-color: var(--primary-color); }
+        .formation-item.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+        .main-content { background: var(--card-bg); padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .diagram-container { width: 100%; aspect-ratio: 1.2 / 1; background: #fdfdfd; border: 2px solid #ddd; border-radius: 8px; position: relative; overflow: hidden; margin-bottom: 15px; }
+        canvas { width: 100%; height: 100%; display: block; }
+        .controls-section { display: flex; gap: 15px; margin-bottom: 15px; align-items: center; flex-wrap: wrap; background: #f8f9fa; padding: 12px; border-radius: 6px; }
+        button.play-btn { background: var(--primary-color); color: white; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.9rem; transition: all 0.2s; }
+        button.play-btn:hover { background: #d35400; }
+        .pattern-selector { display: flex; gap: 6px; flex-wrap: wrap; }
+        .pattern-btn { padding: 5px 12px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-size: 0.75rem; background: white; transition: all 0.2s; }
+        .pattern-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); font-weight: bold; }
+        .legend { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; font-size: 0.8rem; background: #f8f9fa; padding: 10px; border-radius: 6px; }
+        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .legend-dot { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid #333; }
+        .legend-dot.offense { background: var(--offense-color); }
+        .legend-dot.defense { background: var(--defense-color); }
+        .legend-dot.ball { background: var(--ball-color); }
+        .legend-arrow { width: 20px; height: 2px; background: #333; position: relative; }
+        .legend-arrow::after { content: ''; position: absolute; right: -4px; top: -3px; width: 0; height: 0; border-left: 6px solid #333; border-top: 3px solid transparent; border-bottom: 3px solid transparent; }
+        .description-section { background: #f8f9fa; padding: 15px; border-radius: 6px; }
+        .description-section h3 { margin-top: 0; color: var(--primary-color); font-size: 1rem; }
+        .points-list { background: white; padding: 12px; border-left: 4px solid var(--primary-color); border-radius: 4px; margin-top: 10px; }
+        .points-list h4 { margin-top: 0; font-size: 0.9rem; color: #333; }
+        .points-list ul { margin: 5px 0; padding-left: 18px; }
+        .points-list li { margin: 4px 0; font-size: 0.85rem; }
+        .pattern-description { background: #e8f4f8; padding: 10px; border-left: 3px solid var(--info-color); border-radius: 4px; margin-top: 10px; font-size: 0.85rem; }
+        @media (max-width: 850px) { .container { grid-template-columns: 1fr; } .sidebar { position: static; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>浪岡南ミニバス・オフェンスフォーメーション図解</h1>
+    <p class="subtitle">オフェンス・ディフェンス連動アニメーション</p>
+</header>
+
+<div class="container">
+    <div class="sidebar">
+        <h2>フォーメーション一覧</h2>
+        <ul class="formation-list" id="formationList"></ul>
+    </div>
+
+    <div class="main-content">
+        <div class="legend">
+            <div class="legend-item"><div class="legend-dot offense"></div><span>オフェンス</span></div>
+            <div class="legend-item"><div class="legend-dot defense"></div><span>ディフェンス</span></div>
+            <div class="legend-item"><div class="legend-dot ball"></div><span>ボール</span></div>
+            <div class="legend-item"><div class="legend-arrow"></div><span>動き</span></div>
+        </div>
+
+        <div class="diagram-container">
+            <canvas id="courtCanvas"></canvas>
+        </div>
+
+        <div class="controls-section">
+            <button class="play-btn" onclick="startAnimation()">▶ 動きを再生</button>
+            <div id="patternControl" style="display:none; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                <span style="font-weight:bold; font-size:0.8rem;">パターン：</span>
+                <div class="pattern-selector" id="patternSelector"></div>
+            </div>
+        </div>
+
+        <div class="description-section">
+            <h3 id="formationTitle">フォーメーションを選択してください</h3>
+            <p id="formationDesc" style="font-size:0.9rem; margin:5px 0;"></p>
+            <div class="points-list">
+                <h4>基本的な動き</h4>
+                <ul id="formationPoints"></ul>
+            </div>
+            <div id="patternDescContainer"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+// --- データ定義 ---
+const formations = [
+    {
+        id: 1, name: "① ピック&ロール",
+        desc: "CがPGのDFにスクリーンをセットし、PGがドライブ、Cがロールする基本戦術。",
+        basicPoints: ["CがPGのDFにスクリーンをセット", "PGはスクリーンを利用してゴール侵入", "Cは同時にゴールへロール"],
+        patterns: [
+            { name: "PGシュート", desc: "PGが自らドライブでゴールまで運びシュートを狙う。" },
+            { name: "Cへのパス", desc: "ロールしたCへパスを出し、インサイドでシュートさせる。" },
+            { name: "キックアウト", desc: "外側のSFへパスを捌き、アウトサイドシュートを狙わせる。" }
+        ],
+        setup: () => {
+            players = [
+                {id: 'PG', x: 0.5, y: 0.15, label: "PG", ball: true},
+                {id: 'C', x: 0.6, y: 0.4, label: "C"},
+                {id: 'SG', x: 0.2, y: 0.3, label: "SG"},
+                {id: 'SF', x: 0.8, y: 0.3, label: "SF"},
+                {id: 'PF', x: 0.1, y: 0.7, label: "PF"}
+            ];
+            defenders = [
+                {id: 'D1', x: 0.5, y: 0.18, label: "D1"},
+                {id: 'D5', x: 0.62, y: 0.42, label: "D5"}
+            ];
+        },
+        animate: (t) => {
+            if (t < 0.4) {
+                let p = t / 0.4;
+                players[1].x = 0.6 - 0.05 * p; players[1].y = 0.4 - 0.15 * p;
+                defenders[1].x = 0.62 - 0.05 * p; defenders[1].y = 0.42 - 0.15 * p;
+            } else if (t < 0.7) {
+                let p = (t - 0.4) / 0.3;
+                players[0].x = 0.5 + 0.2 * p; players[0].y = 0.15 + 0.15 * p;
+                if (currentPattern === 0) { defenders[0].x = 0.5 + 0.05 * p; defenders[0].y = 0.18 + 0.05 * p; }
+                else if (currentPattern === 1) { defenders[1].x = 0.55 + 0.1 * p; defenders[1].y = 0.25 + 0.2 * p; }
+            } else {
+                let p = (t - 0.7) / 0.3;
+                if (currentPattern === 0) { players[0].y = 0.3 + 0.5 * p; }
+                else if (currentPattern === 1) { 
+                    players[1].y = 0.25 + 0.5 * p;
+                    if (t > 0.8) { players[0].ball = false; players[1].ball = true; }
+                } else { if (t > 0.8) { players[0].ball = false; players[3].ball = true; } }
+            }
+        }
+    },
+    {
+        id: 2, name: "② UCLAカット",
+        desc: "PGがSFにパス後、Cのバックスクリーンを使ってPGがゴール下へカッティング。",
+        basicPoints: ["PGからSFへパスを展開", "CがPGのDFにバックスクリーン", "PGがゴール下へカッティング"],
+        patterns: [
+            { name: "PGへのパス", desc: "ゴール下へ飛び込んだPGへのパスで得点を狙う。" },
+            { name: "Cへのパス", desc: "外へ開いたCにパスを捌き、シュートを打たせる。" }
+        ],
+        setup: () => {
+            players = [
+                {id: 'PG', x: 0.5, y: 0.15, label: "PG", ball: true},
+                {id: 'SF', x: 0.8, y: 0.3, label: "SF"},
+                {id: 'C', x: 0.5, y: 0.4, label: "C"},
+                {id: 'SG', x: 0.2, y: 0.3, label: "SG"},
+                {id: 'PF', x: 0.1, y: 0.7, label: "PF"}
+            ];
+            defenders = [{id: 'D1', x: 0.5, y: 0.18, label: "D1"}];
+        },
+        animate: (t) => {
+            if (t < 0.3) { if (t > 0.25) { players[0].ball = false; players[1].ball = true; } }
+            else if (t < 0.7) { 
+                let p = (t - 0.3) / 0.4;
+                players[0].y = 0.15 + 0.6 * p; 
+            }
+            else { if (t > 0.8 && currentPattern === 0) { players[1].ball = false; players[0].ball = true; } }
+        }
+    }
+];
+
+// 3番以降のダミーデータ生成（リストを埋めるため）
+for (let i = 3; i <= 10; i++) {
+    const names = ["", "", "③ クロススクリーン", "④ フレックス", "⑤ シャッフル", "⑥ ホーンズ", "⑦ シザース", "⑧ スタック", "⑨ アイソレーション", "⑩ プリンストン"];
+    formations.push({ 
+        id: i, name: names[i] || `フォーメーション ${i}`, 
+        desc: "戦略的な動きの解説です。", 
+        basicPoints: ["ポイント1", "ポイント2"], 
+        patterns: [{name: "基本パターン", desc: "動きのバリエーションです。"}], 
+        setup: () => { 
+            players = [{id: 'PG', x: 0.5, y: 0.2, label: "PG", ball: true}]; 
+            defenders = [{id: 'D1', x: 0.5, y: 0.25, label: "D1"}]; 
+        }, 
+        animate: (t) => { players[0].y = 0.2 + 0.5 * t; } 
+    });
+}
+
+// --- システム変数 ---
+let currentFormation = null, currentPattern = 0, players = [], defenders = [], animationId = null, startTime = null;
+const duration = 3000, canvas = document.getElementById('courtCanvas'), ctx = canvas.getContext('2d');
+
+// --- 制御関数 ---
+function init() {
+    const list = document.getElementById('formationList');
+    formations.forEach(f => {
+        const li = document.createElement('li');
+        li.className = 'formation-item'; li.textContent = f.name;
+        li.onclick = () => selectFormation(f); list.appendChild(li);
+    });
+    resizeCanvas(); 
+    window.addEventListener('resize', resizeCanvas);
+    selectFormation(formations[0]); 
+}
+
+function resizeCanvas() {
+    if (!canvas.parentElement) return;
+    canvas.width = canvas.parentElement.clientWidth;
+    canvas.height = canvas.parentElement.clientHeight;
+    draw();
+}
+
+function selectFormation(f) {
+    currentFormation = f; currentPattern = 0;
+    document.querySelectorAll('.formation-item').forEach(el => el.classList.toggle('active', el.textContent === f.name));
+    document.getElementById('formationTitle').textContent = f.name;
+    document.getElementById('formationDesc').textContent = f.desc;
+    const pointsList = document.getElementById('formationPoints'); pointsList.innerHTML = '';
+    f.basicPoints.forEach(p => { const li = document.createElement('li'); li.textContent = p; pointsList.appendChild(li); });
+    const selector = document.getElementById('patternSelector'); selector.innerHTML = '';
+    f.patterns.forEach((p, i) => {
+        const btn = document.createElement('button'); btn.className = 'pattern-btn' + (i === 0 ? ' active' : '');
+        btn.textContent = p.name; btn.onclick = (e) => { e.stopPropagation(); setPattern(i); }; selector.appendChild(btn);
+    });
+    document.getElementById('patternControl').style.display = 'flex';
+    updatePatternDesc(0); f.setup(); cancelAnimationFrame(animationId); draw();
+}
+
+function setPattern(p) {
+    currentPattern = p;
+    document.querySelectorAll('.pattern-btn').forEach((el, i) => el.classList.toggle('active', i === p));
+    updatePatternDesc(p); startAnimation();
+}
+
+function updatePatternDesc(p) {
+    const pd = currentFormation.patterns[p];
+    document.getElementById('patternDescContainer').innerHTML = `<div class="pattern-description"><strong>パターン：${pd.name}</strong><br>${pd.desc}</div>`;
+}
+
+function draw() {
+    const w = canvas.width, h = canvas.height; ctx.clearRect(0, 0, w, h);
+    if (w === 0 || h === 0) return;
+    
+    // コート描画
+    ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.strokeRect(w*0.05, h*0.05, w*0.9, h*0.9);
+    ctx.beginPath(); ctx.arc(w*0.5, h*0.9, w*0.4, Math.PI, Math.PI*2); ctx.stroke();
+    ctx.strokeRect(w*0.4, h*0.65, w*0.2, h*0.25);
+    
+    // 選手描画
+    defenders.forEach(d => {
+        const dx = d.x * w, dy = d.y * h; ctx.beginPath(); ctx.arc(dx, dy, 14, 0, Math.PI*2);
+        ctx.fillStyle = '#e74c3c'; ctx.fill(); ctx.stroke();
+        ctx.fillStyle = 'white'; ctx.font = 'bold 10px Arial'; ctx.textAlign = 'center'; ctx.fillText(d.label, dx, dy+4);
+    });
+    players.forEach(p => {
+        const px = p.x * w, py = p.y * h; ctx.beginPath(); ctx.arc(px, py, 14, 0, Math.PI*2);
+        ctx.fillStyle = p.ball ? '#f39c12' : '#3498db'; ctx.fill(); ctx.stroke();
+        ctx.fillStyle = 'white'; ctx.font = 'bold 10px Arial'; ctx.textAlign = 'center'; ctx.fillText(p.label, px, py+4);
+    });
+}
+
+function startAnimation() { currentFormation.setup(); startTime = performance.now(); animate(); }
+function animate() {
+    const now = performance.now();
+    const t = Math.min((now - startTime) / duration, 1);
+    currentFormation.animate(t); draw();
+    if (t < 1) animationId = requestAnimationFrame(animate);
+}
+
+// 起動
+window.onload = init;
+</script>
+</body>
+</html>
