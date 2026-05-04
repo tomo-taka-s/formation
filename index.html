@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>バスケットボール・オフェンスフォーメーション究極図解</title>
+    
+    <!-- ここからアイコン設定を追加 -->
+    <link rel="icon" href="icon192.png" sizes="192x192" type="image/png">
+    <link rel="apple-touch-icon" href="icon192.png">
+    <link rel="icon" href="icon512.png" sizes="512x512" type="image/png">
+    <!-- ここまで追加 -->
+
+    <style>
+        :root {
+            --primary-color: #e67e22;
+            --secondary-color: #2c3e50;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --offense-color: #3498db;
+            --defense-color: #e74c3c;
+            --ball-color: #f39c12;
+            --info-color: #2980b9;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--secondary-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        header { text-align: center; margin-bottom: 20px; }
+        h1 { color: var(--primary-color); border-bottom: 3px solid var(--primary-color); padding-bottom: 5px; display: inline-block; margin: 0; font-size: 1.3rem; }
+        .subtitle { color: #7f8c8d; font-size: 0.85rem; margin-top: 5px; }
+        .container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 280px 1fr; gap: 20px; }
+        .sidebar { background: var(--card-bg); padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); height: fit-content; position: sticky; top: 20px; }
+        .sidebar h2 { font-size: 0.95rem; margin-top: 0; border-left: 5px solid var(--primary-color); padding-left: 10px; }
+        .formation-list { list-style: none; padding: 0; margin: 0; }
+        .formation-item { padding: 10px; margin-bottom: 6px; cursor: pointer; border-radius: 4px; transition: all 0.2s; font-weight: bold; font-size: 0.8rem; border: 1px solid #eee; background: #f9f9f9; }
+        .formation-item:hover { background: #f0f0f0; border-color: var(--primary-color); }
+        .formation-item.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+        .main-content { background: var(--card-bg); padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .diagram-container { width: 100%; aspect-ratio: 1.2 / 1; background: #fdfdfd; border: 2px solid #ddd; border-radius: 8px; position: relative; overflow: hidden; margin-bottom: 15px; }
+        canvas { width: 100%; height: 100%; display: block; }
+        .controls-section { display: flex; gap: 15px; margin-bottom: 15px; align-items: center; flex-wrap: wrap; background: #f8f9fa; padding: 12px; border-radius: 6px; }
+        button.play-btn { background: var(--primary-color); color: white; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.9rem; transition: all 0.2s; }
+        button.play-btn:hover { background: #d35400; }
+        .pattern-selector { display: flex; gap: 6px; flex-wrap: wrap; }
+        .pattern-btn { padding: 5px 12px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-size: 0.75rem; background: white; transition: all 0.2s; }
+        .pattern-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); font-weight: bold; }
+        .legend { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; font-size: 0.8rem; background: #f8f9fa; padding: 10px; border-radius: 6px; }
+        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .legend-dot { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid #333; }
+        .legend-dot.offense { background: var(--offense-color); }
+        .legend-dot.defense { background: var(--defense-color); }
+        .legend-dot.ball { background: var(--ball-color); }
+        .legend-arrow { width: 20px; height: 2px; background: #333; position: relative; }
+        .legend-arrow::after { content: ''; position: absolute; right: -4px; top: -3px; width: 0; height: 0; border-left: 6px solid #333; border-top: 3px solid transparent; border-bottom: 3px solid transparent; }
+        .description-section { background: #f8f9fa; padding: 15px; border-radius: 6px; }
+        .description-section h3 { margin-top: 0; color: var(--primary-color); font-size: 1rem; }
+        .points-list { background: white; padding: 12px; border-left: 4px solid var(--primary-color); border-radius: 4px; margin-top: 10px; }
+        .points-list h4 { margin-top: 0; font-size: 0.9rem; color: #333; }
+        .points-list ul { margin: 5px 0; padding-left: 18px; }
+        .points-list li { margin: 4px 0; font-size: 0.85rem; }
+        .pattern-description { background: #e8f4f8; padding: 10px; border-left: 3px solid var(--info-color); border-radius: 4px; margin-top: 10px; font-size: 0.85rem; }
+        @media (max-width: 850px) { .container { grid-template-columns: 1fr; } .sidebar { position: static; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>バスケットボール・オフェンスフォーメーション究極図解</h1>
+    <p class="subtitle">オフェンス・ディフェンス連動アニメーション完全版</p>
+</header>
+
+<div class="container">
+    <div class="sidebar">
+        <h2>フォーメーション一覧</h2>
+        <ul class="formation-list" id="formationList"></ul>
+    </div>
+
+    <div class="main-content">
+        <div class="legend">
+            <div class="legend-item"><div class="legend-dot offense"></div><span>オフェンス</span></div>
+            <div class="legend-item"><div class="legend-dot defense"></div><span>ディフェンス</span></div>
+            <div class="legend-item"><div class="legend-dot ball"></div><span>ボール</span></div>
+            <div class="legend-item"><div class="legend-arrow"></div><span>動き</span></div>
+        </div>
+
+        <div class="diagram-container">
+            <canvas id="courtCanvas"></canvas>
+        </div>
+
+        <div class="controls-section">
+            <button class="play-btn" onclick="startAnimation()">▶ 動きを再生</button>
+            <div id="patternControl" style="display:none; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                <span style="font-weight:bold; font-size:0.8rem;">パターン：</span>
+                <div class="pattern-selector" id="patternSelector"></div>
+            </div>
+        </div>
+
+        <div class="description-section">
+            <h3 id="formationTitle">フォーメーションを選択してください</h3>
+            <p id="formationDesc" style="font-size:0.9rem; margin:5px 0;"></p>
+            <div class="points-list">
+                <h4>基本的な動き</h4>
+                <ul id="formationPoints"></ul>
+            </div>
+            <div id="patternDescContainer"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+const formations = [
+    {
+        id: 1, name: "① ピック&ロール",
+        desc: "CがPGのDFにスクリーンをセットし、PGがドライブ、Cがロールする基本戦術。",
+        basicPoints: ["CがPGのDFにスクリーンをセット", "PGはスクリーンを利用してゴール侵入", "Cは同時にゴールへロール"],
+        patterns: [
+            { name: "PGシュート", desc: "PGが自らドライブでゴールまで運びシュートを狙う。DF1がスクリーンに引っかかり、PGが抜け出す。" },
+            { name: "Cへのパス", desc: "ロールしたCへパスを出し、インサイドでシュートさせる。DF5がロールに追いつけない。" },
+            { name: "キックアウト", desc: "外側のSFへパスを捌き、アウトサイドシュートを狙わせる。DFが集中した時の選択肢。" }
+        ],
+        setup: () => {
+            players = [
+                {id: 'PG', x: 0.5, y: 0.15, label: "PG", ball: true},
+                {id: 'C', x: 0.6, y: 0.4, label: "C"},
+                {id: 'SG', x: 0.2, y: 0.3, label: "SG"},
+                {id: 'SF', x: 0.8, y: 0.3, label: "SF"},
+                {id: 'PF', x: 0.1, y: 0.7, label: "PF"}
+            ];
+            defenders = [
+                {id: 'D1', x: 0.5, y: 0.18, label: "D1", target: 0},
+                {id: 'D5', x: 0.62, y: 0.42, label: "D5", target: 1}
+            ];
+        },
+        animate: (t) => {
+            if (t < 0.4) {
+                let p = t / 0.4;
+                players[1].x = 0.6 - 0.05 * p; players[1].y = 0.4 - 0.15 * p;
+                defenders[1].x = 0.62 - 0.05 * p; defenders[1].y = 0.42 - 0.15 * p;
+            } else if (t < 0.7) {
+                let p = (t - 0.4) / 0.3;
+                players[0].x = 0.5 + 0.2 * p; players[0].y = 0.15 + 0.15 * p;
+                if (currentPattern === 0) {
+                    defenders[0].x = 0.5 + 0.05 * p; defenders[0].y = 0.18 + 0.05 * p;
+                } else if (currentPattern === 1) {
+                    defenders[0].x = 0.5 + 0.1 * p; defenders[0].y = 0.18 + 0.05 * p;
+                    defenders[1].x = 0.55 + 0.1 * p; defenders[1].y = 0.25 + 0.2 * p;
+                }
+            } else {
+                let p = (t - 0.7) / 0.3;
+                if (currentPattern === 0) {
+                    players[0].x = 0.7 - 0.2 * p; players[0].y = 0.3 + 0.5 * p;
+                    defenders[0].x = 0.55 + 0.15 * p; defenders[0].y = 0.23 + 0.3 * p;
+                } else if (currentPattern === 1) {
+                    players[1].x = 0.55 - 0.05 * p; players[1].y = 0.25 + 0.5 * p;
+                    defenders[1].x = 0.65 + 0.05 * p; defenders[1].y = 0.45 + 0.3 * p;
+                    if (t > 0.8) { players[0].ball = false; players[1].ball = true; }
+                } else {
+                    if (t > 0.8) { players[0].ball = false; players[3].ball = true; }
+                    defenders[0].x = 0.6 + 0.1 * p; defenders[0].y = 0.23 + 0.2 * p;
+                }
+            }
+        }
+    },
+    {
+        id: 2, name: "② UCLAカット",
+        desc: "PGがSFにパス後、Cのバックスクリーンを使ってPGがゴール下へカッティング。",
+        basicPoints: ["PGからSFへパスを展開", "CがPGのDFにバックスクリーン", "PGがゴール下へカッティング"],
+        patterns: [
+            { name: "PGへのパス", desc: "ゴール下へ飛び込んだPGへのパスで得点を狙う。DF1がスクリーンで止まり、PGが裏を取る。" },
+            { name: "Cへのパス", desc: "外へ開いた（ポップアウト）Cにパスを捌き、シュートを打たせる。" },
+            { name: "SFの1対1", desc: "SF自らが1対1を仕掛けて得点を狙う。ボールマンのスキルが優れている場合。" }
+        ],
+        setup: () => {
+            players = [
+                {id: 'PG', x: 0.5, y: 0.15, label: "PG", ball: true},
+                {id: 'SF', x: 0.8, y: 0.3, label: "SF"},
+                {id: 'C', x: 0.5, y: 0.4, label: "C"},
+                {id: 'SG', x: 0.2, y: 0.3, label: "SG"},
+                {id: 'PF', x: 0.1, y: 0.7, label: "PF"}
+            ];
+            defenders = [
+                {id: 'D1', x: 0.5, y: 0.18, label: "D1", target: 0},
+                {id: 'D3', x: 0.8, y: 0.32, label: "D3", target: 1},
+                {id: 'D5', x: 0.52, y: 0.42, label: "D5", target: 2}
+            ];
+        },
+        animate: (t) => {
+            if (t < 0.3) {
+                if (t > 0.25) { players[0].ball = false; players[1].ball = true; }
+            } else if (t < 0.7) {
+                let p = (t - 0.3) / 0.4;
+                players[0].y = 0.15 + 0.6 * p;
+                defenders[0].y = 0.18 + 0.2 * p;
+                if (currentPattern === 1) {
+                    players[2].x = 0.5 - 0.2 * p; players[2].y = 0.4 - 0.1 * p;
+                    defenders[2].x = 0.52 - 0.15 * p; defenders[2].y = 0.42 - 0.05 * p;
+                }
+            } else {
+                let p = (t - 0.7) / 0.3;
+                if (currentPattern === 0) {
+                    if (t > 0.8) { players[1].ball = false; players[0].ball = true; }
+                    defenders[0].y = 0.38 + 0.3 * p;
+                } else if (currentPattern === 1) {
+                    if (t > 0.8) { players[1].ball = false; players[2].ball = true; }
+                    defenders[2].x = 0.37 - 0.1 * p; defenders[2].y = 0.37 + 0.2 * p;
+                } else {
+                    players[1].x = 0.8 - 0.1 * p; players[1].y = 0.3 + 0.4 * p;
+                    defenders[1].x = 0.8 - 0.05 * p; defenders[1].y = 0.32 + 0.2 * p;
+                }
+            }
+        }
+    },
+    {
+        id: 3, name: "③ クロススクリーン",
+        desc: "PFがCにスクリーンをかけ、Cがボールサイドへカッティング。",
+        basicPoints: ["3アウト2インの配置", "PFが逆サイドのCへスクリーン", "Cがスクリーンを使いボールサイドへ"],
+        patterns: [
+            { name: "ローポストパス", desc: "スクリーンを使ったCへのパスでゴール下での得点を狙う。DF5がスクリーンで遅れる。" },
+            { name: "ハイロー展開", desc: "PFがハイポストへフラッシュし、そこからCへパスを繋ぐ。" }
+        ],
+        setup: () => {
+            players = [
+                {id: 'PG', x: 0.5, y: 0.15, label: "PG", ball: true},
+                {id: 'SF', x: 0.8, y: 0.3, label: "SF"},
+                {id: 'PF', x: 0.3, y: 0.8, label: "PF"},
+                {id: 'C', x: 0.7, y: 0.8, label: "C"},
+                {id: 'SG', x: 0.2, y: 0.3, label: "SG"}
+            ];
+            defenders = [
+                {id: 'D4', x: 0.32, y: 0.82, label: "D4", target: 2},
+                {id: 'D5', x: 0.72, y: 0.82, label: "D5", target: 3}
+            ];
+        },
+        animate: (t) => {
+            if (t < 0.3) { if (t > 0.25) { players[0].ball = false; players[1].ball = true; } }
+            else if (t < 0.7) {
+                let p = (t - 0.3) / 0.4;
+                players[2].x = 0.3 + 0.3 * p;
+                defenders[0].x = 0.32 + 0.2 * p;
+                if (t > 0.5) {
+                    let p2 = (t - 0.5) / 0.2;
+                    players[3].x = 0.7 - 0.4 * p2;
+                    defenders[1].x = 0.72 - 0.25 * p2;
+                }
+            } else {
+                let p = (t - 0.7) / 0.3;
+                if (currentPattern === 0) {
+                    if (t > 0.8) { players[1].ball = false; players[3].ball = true; }
+                    defenders[1].x = 0.47 - 0.1 * p; defenders[1].y = 0.82 - 0.2 * p;
+                } else {
+                    players[2].y = 0.8 - 0.4 * p;
+                    defenders[0].y = 0.82 - 0.3 * p;
+                    if (t > 0.8) { players[1].ball = false; players[2].ball = true; }
+                    if (t > 0.95) { players[2].ball = false; players[3].ball = true; }
+                }
+            }
+        }
+    },
+    {
+        id: 4, name: "④ フレックスオフェンス",
+        desc: "CがSFにバックスクリーンをかけ、SFがカッティング。",
+        basicPoints: ["CがコーナーのSFへバックスクリーン", "SFはボールサイドへカッティング", "ガードからCへダウンスクリーン"],
+        patterns: [
+            { name: "フレックスカット", desc: "Cのバックスクリーンを使ったSFのカッティングで得点を狙う。DF3がスクリーンで止まる。" },
+            { name: "ダウンスクリーン", desc: "ガードがCにダウンスクリーンをかけ、ポジションを入れ替える。" }
+        ],
+        setup: () => {
+            players = [
+                {id: 'PG', x: 0.4, y: 0.15, label: "PG", ball: true},
+                {id: 'SG', x: 0.6, y: 0.15, label: "SG"},
+                {id: 'SF', x: 0.1, y: 0.8, label: "SF"},
+                {id: 'C', x: 0.3, y: 0.8, label: "C"},
+                {id: 'PF', x: 0.9, y: 0.8, label: "PF"}
+            ];
+            defenders = [
+                {id: 'D3', x: 0.12, y: 0.82, label: "D3", target: 2},
+                {id: 'D5', x: 0.32, y: 0.82, label: "D5", target: 3}
+            ];
+        },
+        animate: (t) => {
+            if (t < 0.2) { if (t > 0.15) { players[0].ball = false; players[1].ball = true; } }
+            else if (t < 0.5) {
+                let p = (t - 0.2) / 0.3;
+                players[2].x = 0.1 + 0.6 * p;
+                defenders[0].x = 0.12 + 0.25 * p;
+            } else {
+                let p = (t - 0.5) / 0.5;
+                if (currentPattern === 0) {
+                    if (t > 0.8) { players[1].ball = false; players[2].ball = true; }
+                    defenders[0].x = 0.37 - 0.1 * p; defenders[0].y = 0.82 - 0.2 * p;
+                } else {
+                    players[0].y = 0.15 + 0.5 * p;
+                    players[3].y = 0.8 - 0.5 * p;
+                    defenders[1].y = 0.82 - 0.3 * p;
+                    if (t > 0.9) { players[1].ball = false; players[3].ball = true; }
+                }
+            }
+        }
+    },
+    {
+        id: 5, name: "⑤ シャッフルオフェンス",
+        desc: "Cがウィングにスクリーンをかけ、連続的なスクリーンでチャンスを作る。",
+        basicPoints: ["Cがウィング選手にスクリーン", "シャッフルカットでゴール下へ", "連続的なスクリーンでDFを崩す"],
+        patterns: [
+            { name: "シャッフルカット", desc: "Cのスクリーンを使ったウィング選手のカッティング。DF2がスクリーンで止まる。" },
+            { name: "バックスクリーン", desc: "コーナーの選手がCにバックスクリーンをかけ、Cがカットする。" }
+        ],
+        setup: () => {
+            players = [
+                {id: 'PG', x: 0.5, y: 0.15, label: "PG", ball: true},
+                {id: 'SF', x: 0.2, y: 0.3, label: "SF"},
+                {id: 'C', x: 0.5, y: 0.4, label: "C"},
+                {id: 'SG', x: 0.8, y: 0.3, label: "SG"},
+                {id: 'PF', x: 0.1, y: 0.7, label: "PF"}
+            ];
+            defenders = [
+                {id: 'D2', x: 0.22, y: 0.32, label: "D2", target: 1},
+                {id: 'D5', x: 0.52, y: 0.42, label: "D5", target: 2}
+            ];
+        },
+        animate: (t) => {
+            if (t < 0.3) { if (t > 0.25) { players[0].ball = false; players[3].ball = true; } }
+            else if (t < 0.7) {
+                let p = (t - 0.3) / 0.4;
+                players[1].x = 0.2 + 0.4 * p; players[1].y = 0.3 + 0.5 * p;
+                defenders[0].x = 0.22 + 0.15 * p;
+                if (currentPattern === 1) {
+                    players[4].x = 0.1 + 0.3 * p; players[4].y = 0.7 - 0.2 * p;
+                }
+            } else {
+                let p = (t - 0.7) / 0.3;
+                if (currentPattern === 0) {
+                    if (t > 0.8) { players[3].ball = false; players[1].ball = true; }
+                    defenders[0].x = 0.37 - 0.1 * p; defenders[0].y = 0.32 + 0.2 * p;
+                } else {
+                    players[2].y = 0.4 + 0.4 * p;
+                    defenders[1].y = 0.42 + 0.2 * p;
+                    if (t > 0.8) { players[3].ball = false; players[2].ball = true; }
+                }
+            }
+        }
+    },
+    {
+        id: 6, name: "⑥ ホーンズセット",
+        desc: "ハイポストに2人を配置した「角」のような陣形から多様な戦術へ展開。",
+        basicPoints: ["ハイポストにPFとCを配置", "スペーシングが非常に広い", "多様な戦術へのエントリーとして機能"],
+        patterns: [
+            { name: "ピック&ロール", desc: "ハイポストのCがPGにスクリーンをかけ、ピック&ロールを展開。DF1がスクリーンで止まる。" },
+            { name: "UCLAカット", desc: "ウィングへパス後、ハイポストからバックスクリーンをセット。" }
+        ],
+        setup: () => {
+            players = [
+                {id: 'PG', x: 0.5, y: 0.15, label: "PG", ball: true},
+                {id: 'PF', x: 0.4, y: 0.4, label: "PF"},
+                {id: 'C', x: 0.6, y: 0.4, label: "C"},
+                {id: 'SG', x: 0.1, y: 0.8, label: "SG"},
+                {id: 'SF', x: 0.9, y: 0.8, label: "SF"}
+            ];
+            defenders = [
+                {id: 'D1', x: 0.5, y: 0.18, label: "D1", target: 0},
+                {id: 'D4', x: 0.42, y: 0.42, label: "D4", target: 1},
+                {id: 'D5', x: 0.62, y: 0.42, label: "D5", target: 2}
+            ];
+        },
+        animate: (t) => {
+            if (t < 0.4) {
+                let p = t / 0.4;
+                if (currentPattern === 0) {
+                    players[2].x = 0.6 - 0.05 * p; players[2].y = 0.4 - 0.15 * p;
+                    defenders[2].x = 0.62 - 0.05 * p; defenders[2].y = 0.42 - 0.15 * p;
+                } else {
+                    if (t > 0.3) { players[0].ball = false; players[4].ball = true; }
+                }
+            } else {
+                let p = (t - 0.4) / 0.6;
+                if (currentPattern === 0) {
+                    players[0].x = 0.5 + 0.2 * p; players[0].y = 0.15 + 0.15 * p;
+                    defenders[0].x = 0.5 + 0.05 * p; defenders[0].y = 0.18 + 0.05 * p;
+                    players[2].y = 0.25 + 0.5 * p;
+                    if (t > 0.8) { players[0].ball = false; players[2].ball = true; }
+                } else {
+                    players[0].y = 0.15 + 0.6 * p;
+                    defenders[0].y = 0.18 + 0.2 * p;
+                    if (t > 0.8) { players[4].ball = false; players[0].ball = true; }
+                }
+            }
+        }
+    },
+    {
+        id: 7, name: "⑦ シザースカット",
+        desc: "ハイポストのCにパス後、PGとSFがハサミのように交差してカッティング。",
+        basicPoints: ["ハイポストのCへパスを通す", "PGとSFが交差してカッティング", "Cの判断でハンドオフか自らシュートか選択"],
+        patterns: [
+            { name: "DF反応遅れ", desc: "カッティングした選手へ手渡しパス（ハンドオフ）を行う。DF1がスクリーンで遅れる。" },
+            { name: "DF対応あり", desc: "パスコースを塞がれた際に、Cが自らシュートを狙う。DF1が対応してくる。" }
+        ],
+        setup: () => {
+            players = [
+                {id: 'PG', x: 0.4, y: 0.2, label: "PG", ball: true},
+                {id: 'SF', x: 0.6, y: 0.2, label: "SF"},
+                {id: 'C', x: 0.5, y: 0.45, label: "C"},
+                {id: 'SG', x: 0.1, y: 0.7, label: "SG"},
+                {id: 'PF', x: 0.9, y: 0.7, label: "PF"}
+            ];
+            defenders = [
+                {id: 'D1', x: 0.42, y: 0.22, label: "D1", target: 0},
+                {id: 'D3', x: 0.62, y: 0.22, label: "D3", target: 1}
+            ];
+        },
+        animate: (t) => {
+            if (t < 0.3) { if (t > 0.25) { players[0].ball = false; players[2].ball = true; } }
+            else if (t < 0.6) {
+                let p = (t - 0.3) / 0.3;
+                players[0].x = 0.4 + 0.2 * p; players[0].y = 0.2 + 0.5 * p;
+                if (currentPattern === 0) {
+                    defenders[0].y = 0.22 + 0.2 * p;
+                    defenders[0].x = 0.42 + 0.05 * p;
+                } else {
+                    defenders[0].y = 0.22 + 0.5 * p;
+                    defenders[0].x = 0.42 + 0.15 * p;
+                }
+            } else {
+                let p = (t - 0.6) / 0.4;
+                players[1].x = 0.6 - 0.2 * p; players[1].y = 0.2 + 0.5 * p;
+                if (currentPattern === 0) {
+                    defenders[1].y = 0.22 + 0.2 * p;
+                    defenders[1].x = 0.62 - 0.05 * p;
+                    if (t > 0.8) { players[2].ball = false; players[1].ball = true; }
+                } else {
+                    defenders[1].y = 0.22 + 0.5 * p;
+                    defenders[1].x = 0.62 - 0.15 * p;
+                    if (t > 0.8) { players[2].ball = true; players[2].y = 0.45 + 0.3 * p; }
+                }
+            }
+        }
+    },
+    {
+        id: 8, name: "⑧ スタックオフェンス",
+        desc: "ローポストに選手を密集させ、スクリーンを使ってマークを外す。",
+        basicPoints: ["ローポストに選手を密集させる", "DFに応じた3つのカッティングを選択", "密集から一気にマークを外す"],
+        patterns: [
+            { name: "アウトサイドカット", desc: "DFを引きつけ、素早くウィングへ飛び出してパスを受ける。DF2が引きつけられる。" },
+            { name: "インサイドカット", desc: "ウィングまで引きつけてから、ゴール下へカッティングする。" },
+            { name: "カールカット", desc: "スクリーナーの周りを回るようにゴールへ向かってカッティング。" }
+        ],
+        setup: () => {
+            players = [
+                {id: 'PG', x: 0.5, y: 0.15, label: "PG", ball: true},
+                {id: 'SG', x: 0.2, y: 0.7, label: "SG"},
+                {id: 'C', x: 0.2, y: 0.8, label: "C"},
+                {id: 'SF', x: 0.8, y: 0.3, label: "SF"},
+                {id: 'PF', x: 0.8, y: 0.8, label: "PF"}
+            ];
+            defenders = [
+                {id: 'D2', x: 0.22, y: 0.72, label: "D2", target: 1},
+                {id: 'D5', x: 0.82, y: 0.82, label: "D5", target: 4}
+            ];
+        },
+        animate: (t) => {
+            if (t < 0.4) {
+                let p = t / 0.4;
+                players[1].y = 0.7 + 0.1 * p;
+            } else {
+                let p = (t - 0.4) / 0.6;
+                if (currentPattern === 0) {
+                    players[1].x = 0.2 - 0.1 * p; players[1].y = 0.8 - 0.4 * p;
+                    defenders[0].x = 0.22 - 0.05 * p; defenders[0].y = 0.82 - 0.2 * p;
+                    if (t > 0.8) { players[0].ball = false; players[1].ball = true; }
+                } else if (currentPattern === 1) {
+                    players[1].x = 0.2 + 0.3 * p; players[1].y = 0.8 + 0.1 * p;
+                    defenders[0].x = 0.22 + 0.1 * p; defenders[0].y = 0.82 - 0.1 * p;
+                    if (t > 0.8) { players[0].ball = false; players[1].ball = true; }
+                } else {
+                    players[1].x = 0.2 + 0.2 * Math.sin(p * Math.PI); players[1].y = 0.8 - 0.6 * p;
+                    defenders[0].x = 0.22 + 0.1 * Math.sin(p * Math.PI); defenders[0].y = 0.82 - 0.3 * p;
+                    if (t > 0.8) { players[0].ball = false; players[1].ball = true; }
+                }
+            }
+        }
+    },
+    {
+        id: 9, name: "⑨ アイソレーション",
+        desc: "エースに1対1をさせるため、他の4人がアウトサイドに広がる。",
+        basicPoints: ["5アウトの配置でスペースを作る", "エースの圧倒的な個の力を活かす", "インサイドに広大なスペースを確保"],
+        patterns: [
+            { name: "ドライブ突破", desc: "エースがドリブルでディフェンスを抜き去り、ゴールへ向かう。DF3が追いつけない。" },
+            { name: "ステップバック", desc: "ディフェンスとの距離を空け、ジャンプシュートを狙う。DF3が詰め寄る。" }
+        ],
+        setup: () => {
+            players = [
+                {id: 'SF', x: 0.5, y: 0.3, label: "SF", ball: true},
+                {id: 'PG', x: 0.1, y: 0.3, label: "PG"},
+                {id: 'SG', x: 0.9, y: 0.3, label: "SG"},
+                {id: 'PF', x: 0.1, y: 0.8, label: "PF"},
+                {id: 'C', x: 0.9, y: 0.8, label: "C"}
+            ];
+            defenders = [{id: 'D3', x: 0.5, y: 0.32, label: "D3", target: 0}];
+        },
+        animate: (t) => {
+            let p = t;
+            if (currentPattern === 0) {
+                players[0].x = 0.5 + 0.1 * Math.sin(t * 20); players[0].y = 0.3 + 0.5 * p;
+                defenders[0].x = 0.5 + 0.05 * Math.sin(t * 20); defenders[0].y = 0.32 + 0.3 * p;
+            } else {
+                if (t < 0.6) {
+                    players[0].y = 0.3 + 0.2 * p; defenders[0].y = 0.32 + 0.2 * p;
+                } else {
+                    let p2 = (t - 0.6) / 0.4;
+                    players[0].y = 0.42 - 0.1 * p2;
+                    defenders[0].y = 0.44 - 0.05 * p2;
+                }
+            }
+        }
+    },
+    {
+        id: 10, name: "⑩ プリンストンオフェンス",
+        desc: "機動力を活かし、バックドアカットや3Pを狙う戦術。",
+        basicPoints: ["2-3ハイセットから始動", "バックドアカットで裏を突く", "チームプレーで体格差を無効化"],
+        patterns: [
+            { name: "バックドアカット", desc: "ディナイの裏をかき、ゴールへカッティングする。DF2がバックドアで裏を取られる。" },
+            { name: "3Pシュート展開", desc: "バックドアでDFを中に寄せ、外でノーマークを作る。" }
+        ],
+        setup: () => {
+            players = [
+                {id: 'PG', x: 0.5, y: 0.15, label: "PG", ball: true},
+                {id: 'C', x: 0.5, y: 0.4, label: "C"},
+                {id: 'SG', x: 0.2, y: 0.3, label: "SG"},
+                {id: 'SF', x: 0.8, y: 0.3, label: "SF"},
+                {id: 'PF', x: 0.1, y: 0.7, label: "PF"}
+            ];
+            defenders = [
+                {id: 'D2', x: 0.22, y: 0.32, label: "D2", target: 2},
+                {id: 'D3', x: 0.8, y: 0.32, label: "D3", target: 3}
+            ];
+        },
+        animate: (t) => {
+            if (t < 0.3) { if (t > 0.25) { players[0].ball = false; players[1].ball = true; } }
+            else if (t < 0.7) {
+                let p = (t - 0.3) / 0.4;
+                players[2].x = 0.2 + 0.2 * p; players[2].y = 0.3 + 0.5 * p;
+                if (currentPattern === 0) {
+                    defenders[0].y = 0.32 + 0.1 * p;
+                    defenders[0].x = 0.22 + 0.05 * p;
+                } else {
+                    defenders[0].y = 0.32 + 0.2 * p;
+                    defenders[0].x = 0.22 - 0.05 * p;
+                }
+            } else {
+                let p = (t - 0.7) / 0.3;
+                if (currentPattern === 0) {
+                    if (t > 0.8) { players[1].ball = false; players[2].ball = true; }
+                    defenders[0].y = 0.42 + 0.2 * p;
+                } else {
+                    players[3].x = 0.8 - 0.1 * p;
+                    defenders[1].x = 0.8 - 0.05 * p;
+                    if (t > 0.8) { players[1].ball = false; players[3].ball = true; }
+                }
+            }
+        }
+    }
+];
+
+let currentFormation = null, currentPattern = 0, players = [], defenders = [], animationId = null, startTime = null;
+const duration = 3500, canvas = document.getElementById('courtCanvas'), ctx = canvas.getContext('2d');
+
+function init() {
+    const list = document.getElementById('formationList');
+    formations.forEach(f => {
+        const li = document.createElement('li');
+        li.className = 'formation-item'; li.textContent = f.name;
+        li.onclick = () => selectFormation(f); list.appendChild(li);
+    });
+    resizeCanvas(); window.addEventListener('resize', resizeCanvas); selectFormation(formations[6]);
+}
+
+function resizeCanvas() { canvas.width = canvas.parentElement.clientWidth; canvas.height = canvas.parentElement.clientHeight; draw(); }
+
+function selectFormation(f) {
+    currentFormation = f; currentPattern = 0;
+    document.querySelectorAll('.formation-item').forEach(el => el.classList.toggle('active', el.textContent === f.name));
+    document.getElementById('formationTitle').textContent = f.name;
+    document.getElementById('formationDesc').textContent = f.desc;
+    const pointsList = document.getElementById('formationPoints'); pointsList.innerHTML = '';
+    f.basicPoints.forEach(p => { const li = document.createElement('li'); li.textContent = p; pointsList.appendChild(li); });
+    const selector = document.getElementById('patternSelector'); selector.innerHTML = '';
+    if (f.patterns) {
+        document.getElementById('patternControl').style.display = 'flex';
+        f.patterns.forEach((p, i) => {
+            const btn = document.createElement('button'); btn.className = 'pattern-btn' + (i === 0 ? ' active' : '');
+            btn.textContent = p.name; btn.onclick = () => setPattern(i); selector.appendChild(btn);
+        });
+        updatePatternDesc(0);
+    } else { document.getElementById('patternControl').style.display = 'none'; }
+    f.setup(); cancelAnimationFrame(animationId); draw();
+}
+
+function setPattern(p) {
+    currentPattern = p;
+    document.querySelectorAll('.pattern-btn').forEach((el, i) => el.classList.toggle('active', i === p));
+    updatePatternDesc(p); startAnimation();
+}
+
+function updatePatternDesc(p) {
+    const pd = currentFormation.patterns[p];
+    document.getElementById('patternDescContainer').innerHTML = `<div class="pattern-description"><strong>パターン：${pd.name}</strong><br>${pd.desc}</div>`;
+}
+
+function draw() {
+    const w = canvas.width, h = canvas.height; ctx.clearRect(0, 0, w, h);
+    ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.strokeRect(w*0.05, h*0.05, w*0.9, h*0.9);
+    ctx.beginPath(); ctx.arc(w*0.5, h*0.9, w*0.4, Math.PI, Math.PI*2); ctx.stroke();
+    ctx.strokeRect(w*0.4, h*0.65, w*0.2, h*0.25);
+    ctx.beginPath(); ctx.arc(w*0.5, h*0.9, 10, 0, Math.PI*2); ctx.stroke();
+    
+    defenders.forEach(d => {
+        const dx = d.x * w, dy = d.y * h; ctx.beginPath(); ctx.arc(dx, dy, 14, 0, Math.PI*2);
+        ctx.fillStyle = '#e74c3c'; ctx.fill(); ctx.strokeStyle = '#c0392b'; ctx.lineWidth = 2; ctx.stroke();
+        ctx.fillStyle = 'white'; ctx.font = 'bold 10px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(d.label, dx, dy);
+    });
+    
+    players.forEach(p => {
+        const px = p.x * w, py = p.y * h; ctx.beginPath(); ctx.arc(px, py, 14, 0, Math.PI*2);
+        ctx.fillStyle = p.ball ? '#f39c12' : '#3498db'; ctx.fill(); ctx.strokeStyle = '#2980b9'; ctx.lineWidth = 2; ctx.stroke();
+        ctx.fillStyle = 'white'; ctx.font = 'bold 11px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(p.label, px, py);
+        if (p.ball) { ctx.beginPath(); ctx.arc(px + 11, py - 11, 6, 0, Math.PI*2); ctx.fillStyle = '#f39c12'; ctx.fill(); ctx.strokeStyle = '#d68910'; ctx.lineWidth = 1; ctx.stroke(); }
+    });
+}
+
+function startAnimation() { currentFormation.setup(); startTime = performance.now(); animate(); }
+
+function animate() {
+    const t = Math.min((performance.now() - startTime) / duration, 1);
+    currentFormation.animate(t); draw(); if (t < 1) animationId = requestAnimationFrame(animate);
+}
+
+init();
+</script>
+</body>
+</html>
